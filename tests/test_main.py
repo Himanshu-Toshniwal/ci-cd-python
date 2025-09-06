@@ -1,61 +1,34 @@
-import os
-import tempfile
-from src.main import NotesApp
+def test_add_note(temp_notes_app):
+    note_id = temp_notes_app.add_note("Test Title", "Test Content")
+    assert note_id == 1
+    assert len(temp_notes_app.notes) == 1
 
-def test_add_note():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        note_id = app.add_note("Test Title", "Test Content")
-        assert note_id == 1
-        assert len(app.notes) == 1
-        os.unlink(tmp.name)
+def test_get_note(temp_notes_app):
+    note_id = temp_notes_app.add_note("Test Title", "Test Content")
+    note = temp_notes_app.get_note(note_id)
+    assert note["title"] == "Test Title"
+    assert note["content"] == "Test Content"
 
-def test_get_note():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        note_id = app.add_note("Test Title", "Test Content")
-        note = app.get_note(note_id)
-        assert note["title"] == "Test Title"
-        assert note["content"] == "Test Content"
-        os.unlink(tmp.name)
+def test_update_note(temp_notes_app):
+    note_id = temp_notes_app.add_note("Old Title", "Old Content")
+    result = temp_notes_app.update_note(note_id, "New Title", "New Content")
+    assert result == True
+    note = temp_notes_app.get_note(note_id)
+    assert note["title"] == "New Title"
+    assert note["content"] == "New Content"
 
-def test_update_note():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        note_id = app.add_note("Old Title", "Old Content")
-        result = app.update_note(note_id, "New Title", "New Content")
-        assert result == True
-        note = app.get_note(note_id)
-        assert note["title"] == "New Title"
-        assert note["content"] == "New Content"
-        os.unlink(tmp.name)
+def test_delete_note(temp_notes_app):
+    note_id = temp_notes_app.add_note("Test Title", "Test Content")
+    temp_notes_app.delete_note(note_id)
+    assert len(temp_notes_app.notes) == 0
+    assert temp_notes_app.get_note(note_id) == None
 
-def test_delete_note():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        note_id = app.add_note("Test Title", "Test Content")
-        app.delete_note(note_id)
-        assert len(app.notes) == 0
-        assert app.get_note(note_id) == None
-        os.unlink(tmp.name)
+def test_search_notes(sample_notes_app):
+    results = sample_notes_app.search_notes("Python")
+    assert len(results) == 1
+    assert results[0]["title"] == "Python Tutorial"
 
-def test_search_notes():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        app.add_note("Python Tutorial", "Learn Python basics")
-        app.add_note("Java Guide", "Java programming concepts")
-        results = app.search_notes("Python")
-        assert len(results) == 1
-        assert results[0]["title"] == "Python Tutorial"
-        os.unlink(tmp.name)
-
-def test_list_notes():
-    with tempfile.NamedTemporaryFile(delete=False) as tmp:
-        app = NotesApp(tmp.name)
-        app.add_note("Note 1", "Content 1")
-        app.add_note("Note 2", "Content 2")
-        notes = app.list_notes()
-        assert len(notes) == 2
-        assert notes[0]["title"] == "Note 1"
-        assert notes[1]["title"] == "Note 2"
-        os.unlink(tmp.name)
+def test_list_notes(sample_notes_app):
+    notes = sample_notes_app.list_notes()
+    assert len(notes) == 3
+    assert notes[0]["title"] == "Python Tutorial"
