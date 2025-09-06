@@ -1,4 +1,5 @@
 import json
+
 import os
 from datetime import datetime
 
@@ -9,8 +10,13 @@ class NotesApp:
     
     def load_notes(self):
         if os.path.exists(self.filename):
-            with open(self.filename, 'r') as f:
-                return json.load(f)
+            try:
+                with open(self.filename, 'r') as f:
+                    content = f.read().strip()
+                    if content:
+                        return json.loads(content)
+            except (json.JSONDecodeError, ValueError):
+                pass
         return []
     
     def save_notes(self):
